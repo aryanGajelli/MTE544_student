@@ -19,6 +19,7 @@ from rclpy.time import Time
 
 # You may add any other imports you may need/want to use below
 import math
+from pathlib import Path
 
 
 CIRCLE = 0
@@ -30,9 +31,10 @@ motion_types = ['circle', 'spiral', 'line']
 class motion_executioner(Node):
 
     def __init__(self, motion_type=0):
-
         super().__init__("motion_types")
 
+        self.log_dir = Path("logs")
+        self.log_dir.mkdir(exist_ok=True, parents=True)
         self.type = motion_type
 
         self.radius_ = 0.0
@@ -46,9 +48,9 @@ class motion_executioner(Node):
         self.vel_publisher = self.create_publisher(Twist, topic="/cmd_vel", qos_profile=10)
 
         # loggers
-        self.imu_logger = Logger('imu_content_'+str(motion_types[motion_type])+'.csv', headers=["acc_x", "acc_y", "angular_z", "stamp"])
-        self.odom_logger = Logger('odom_content_'+str(motion_types[motion_type])+'.csv', headers=["x", "y", "th", "stamp"])
-        self.laser_logger = Logger('laser_content_'+str(motion_types[motion_type])+'.csv', headers=["ranges", "angle_increment", "stamp"])
+        self.imu_logger = Logger(self.log_dir / f'imu_content_{motion_types[motion_type]}.csv', headers=["acc_x", "acc_y", "angular_z", "stamp"])
+        self.odom_logger = Logger(self.log_dir / f'odom_content_{motion_types[motion_type]}.csv', headers=["x", "y", "th", "stamp"])
+        self.laser_logger = Logger(self.log_dir / f'laser_content_{motion_types[motion_type]}.csv', headers=["ranges", "angle_increment", "stamp"])
 
         # TODO Part 3: Create the QoS profile by setting the proper parameters in (...)
         qos_profile = QoSProfile(reliability=2, durability=2, history=1, depth=10)
@@ -68,13 +70,16 @@ class motion_executioner(Node):
 
         self.create_timer(0.1, self.timer_callback)
 
+        self.start_time = self.now
+        
+
     @property
     def now(self) -> Time:
         return self.get_clock().now()
 
     @property
-    def now_s(self) -> float:
-        return self.now.nanoseconds / 1e9
+    def t(self) -> float:
+        return (self.now - self.start_time).nanoseconds / 1e9
 
     # TODO Part 5: Callback functions: complete the callback functions of the three sensors to log the proper data.
     # To also log the time you need to use the rclpy Time class, each ros msg will come with a header, and then
@@ -84,16 +89,16 @@ class motion_executioner(Node):
 
     def imu_callback(self, imu_msg: Imu):
         # log imu msgs
-        self.imu_logger.log_values([imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y, imu_msg.angular_velocity.z, self.now_s])
+        self.imu_logger.log_values([imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y, imu_msg.angular_velocity.z, self.t])
 
     def odom_callback(self, odom_msg: Odometry):
         # log odom msgs
-        self.odom_logger.log_values([odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y, euler_from_quaternion(odom_msg.pose.pose.orientation), self.now_s])
+        self.odom_logger.log_values([odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y, euler_from_quaternion(odom_msg.pose.pose.orientation), self.t])
 
     def laser_callback(self, laser_msg: LaserScan):
         # log laser msgs with position msg at that time
         # breakpoint()
-        self.laser_logger.log_values([laser_msg.ranges, laser_msg.angle_increment, self.now_s])
+        self.laser_logger.log_values([laser_msg.ranges, laser_msg.angle_increment, self.t])
 
     def timer_callback(self):
         if self.odom_initialized and self.laser_initialized and self.imu_initialized:
@@ -123,16 +128,17 @@ class motion_executioner(Node):
 
     def make_circular_twist(self):
         msg = Twist()
-        t = self.now_s
         # fill up the twist msg for circular motion
-        msg.linear.x = -math.sin(t)
-        msg.linear.y = math.cos(t)
+        msg.linear.x = 1.
         msg.angular.z = 1.
         return msg
 
     def make_spiral_twist(self):
         msg = Twist()
-        ...  # fill up the twist msg for spiral motion
+
+        # fill up the twist msg for spiral motion
+        msg.linear.x = math.sin(self.t/10)*2
+        msg.angular.z = 1.
         return msg
 
     def make_acc_line_twist(self):
