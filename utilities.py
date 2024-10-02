@@ -1,34 +1,21 @@
 from math import atan2, asin, sqrt
-
+from geometry_msgs.msg import Quaternion
+import csv
 M_PI=3.1415926535
 
 class Logger:
     def __init__(self, filename, headers=["e", "e_dot", "e_int", "stamp"]):
         self.filename = filename
-
+        
         with open(self.filename, 'w') as file:
-            header_str=""
-
-            for header in headers:
-                header_str+=header
-                header_str+=", "
-            
-            header_str+="\n"
-            
-            file.write(header_str)
-
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(headers)
 
     def log_values(self, values_list):
 
         with open(self.filename, 'a') as file:
-            vals_str=""
-
-            # TODO Part 5: Write the values from the list to the file
-            ...
-            
-            vals_str+="\n"
-            
-            file.write(vals_str)
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(values_list)
             
 
     def save_log(self):
@@ -80,12 +67,16 @@ class FileReader:
 
 
 # TODO Part 5: Implement the conversion from Quaternion to Euler Angles
-def euler_from_quaternion(quat):
+def euler_from_quaternion(q: Quaternion):
     """
     Convert quaternion (w in last place) to euler roll, pitch, yaw.
     quat = [x, y, z, w]
     """
-    ... # just unpack yaw
+
+    yaw = atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z)
+    pitch = asin(-2.0*(q.x*q.z - q.w*q.y))
+    roll = atan2(2.0*(q.x*q.y + q.w*q.z), q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z)
+
     return yaw
 
 
