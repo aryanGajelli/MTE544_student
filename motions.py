@@ -58,20 +58,20 @@ class motion_executioner(Node):
         # TODO Part 5: Create below the subscription to the topics corresponding to the respective sensors
         # IMU subscription
         self.imu_subsciber = self.create_subscription(Imu, topic="/imu", callback=self.imu_callback, qos_profile=qos_profile)
-        self.odom_initialized = True
+        self.imu_initialized = True
 
         # ODOM subscription
         self.odom_subsciber = self.create_subscription(Odometry, topic="/odom", callback=self.odom_callback, qos_profile=qos_profile)
-        self.laser_initialized = True
+        self.odom = Odometry()
+        self.odom_initialized = True
 
         # LaserScan subscription
         self.laser_subsciber = self.create_subscription(LaserScan, topic="/scan", callback=self.laser_callback, qos_profile=qos_profile)
-        self.imu_initialized = True
+        self.laser_initialized = True
 
         self.create_timer(0.1, self.timer_callback)
 
         self.start_time = self.now
-        
 
     @property
     def now(self) -> Time:
@@ -94,10 +94,11 @@ class motion_executioner(Node):
     def odom_callback(self, odom_msg: Odometry):
         # log odom msgs
         self.odom_logger.log_values([odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y, euler_from_quaternion(odom_msg.pose.pose.orientation), self.t])
+        # track odometry data for correcting the robot's orientation in make_acc_line_twist
+        self.odom = odom_msg
 
     def laser_callback(self, laser_msg: LaserScan):
         # log laser msgs with position msg at that time
-        # breakpoint()
         self.laser_logger.log_values([laser_msg.ranges, laser_msg.angle_increment, self.t])
 
     def timer_callback(self):
@@ -125,7 +126,6 @@ class motion_executioner(Node):
         self.vel_publisher.publish(cmd_vel_msg)
 
     # TODO Part 4: Motion functions: complete the functions to generate the proper messages corresponding to the desired motions of the robot
-
     def make_circular_twist(self):
         msg = Twist()
         # fill up the twist msg for circular motion
@@ -137,7 +137,9 @@ class motion_executioner(Node):
         msg = Twist()
 
         # fill up the twist msg for spiral motion
-        msg.linear.x = math.sin(self.t/10)*2
+
+        # Spiral motion for robot. Limit the linear velocity to prevent the robot from spinning out of control.
+        msg.linear.x = min(self.t/10, 2.)
         msg.angular.z = 1.
         return msg
 
@@ -145,9 +147,19 @@ class motion_executioner(Node):
         msg = Twist()
         # fill up the twist msg for line motion
         # 45 deg motion in a straight line
-        msg.linear.x = 1.
-        msg.linear.y = 1.
-        msg.angular.z = 0.
+
+        # Turn to 45 degrees using a P controller and move forwards in straight line.
+        # Correct the orientation of the robot to 45 degrees if it veers off course.
+
+        yaw = euler_from_quaternion(self.odom.pose.pose.orientation)
+        kP = 0.5
+        error = math.pi/4 - yaw
+        FIVE_DEG = 0.1
+        if abs(error) > FIVE_DEG:
+            msg.angular.z = kP * error
+        else:
+            msg.angular.z = 0.
+            msg.linear.x = 1.
 
         return msg
 
@@ -166,10 +178,8 @@ if __name__ == "__main__":
         ME = motion_executioner(motion_type=CIRCLE)
     elif args.motion.lower() == "line":
         ME = motion_executioner(motion_type=ACC_LINE)
-
     elif args.motion.lower() == "spiral":
         ME = motion_executioner(motion_type=SPIRAL)
-
     else:
         print(f"we don't have {args.motion.lower()} motion type")
 

@@ -73,7 +73,7 @@ def euler_from_quaternion(q: Quaternion):
     quat = [x, y, z, w]
     """
 
-    yaw = atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z)
+    yaw = atan2(2.0*(q.w*q.z + q.x*q.y), 1-2*(q.y*q.y + q.z*q.z))
     pitch = asin(-2.0*(q.x*q.z - q.w*q.y))
     roll = atan2(2.0*(q.x*q.y + q.w*q.z), q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z)
 
