@@ -129,7 +129,7 @@ class motion_executioner(Node):
     def make_circular_twist(self):
         msg = Twist()
         # fill up the twist msg for circular motion
-        msg.linear.x = 1.
+        msg.linear.x = 0.5
         msg.angular.z = 1.
         return msg
 
@@ -139,7 +139,7 @@ class motion_executioner(Node):
         # fill up the twist msg for spiral motion
 
         # Spiral motion for robot. Limit the linear velocity to prevent the robot from spinning out of control.
-        msg.linear.x = min(self.t/10, 2.)
+        msg.linear.x = min(self.t/10, 1.)
         msg.angular.z = 1.
         return msg
 
