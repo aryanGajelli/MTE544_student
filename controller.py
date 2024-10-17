@@ -2,7 +2,7 @@ import numpy as np
 
 
 from pid import PID_ctrl
-from utilities import euler_from_quaternion, calculate_angular_error, calculate_linear_error
+from utilities import euler_from_quaternion, calculate_angular_error, calculate_linear_error, saturate
 
 M_PI=3.1415926535
 
@@ -29,9 +29,9 @@ class controller:
         angular_vel=self.PID_angular.update([e_ang, pose[3]], status)
         
         # TODO Part 4: Add saturation limits for the robot linear and angular velocity
-
-        linear_vel = ... if linear_vel > 1.0 else linear_vel
-        angular_vel= ... if angular_vel > 1.0 else angular_vel
+        # See for max vels https://emanual.robotis.com/docs/en/platform/turtlebot3/features/
+        linear_vel = saturate(linear_vel, 0.22)
+        angular_vel= saturate(angular_vel, 2.84)
         
         return linear_vel, angular_vel
     

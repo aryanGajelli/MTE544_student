@@ -1,38 +1,20 @@
-from math import atan2, asin, sqrt
-
+from math import atan2, asin, sqrt, dist
+import csv
 M_PI=3.1415926535
 
 class Logger:
-    
     def __init__(self, filename, headers=["e", "e_dot", "e_int", "stamp"]):
-        
         self.filename = filename
-
+        
         with open(self.filename, 'w') as file:
-            
-            header_str=""
-
-            for header in headers:
-                header_str+=header
-                header_str+=", "
-            
-            header_str+="\n"
-            
-            file.write(header_str)
-
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(headers)
 
     def log_values(self, values_list):
 
         with open(self.filename, 'a') as file:
-            
-            vals_str=""
-            
-            for value in values_list:
-                vals_str+=f"{value}, "
-            
-            vals_str+="\n"
-            
-            file.write(vals_str)
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(values_list)
             
 
     def save_log(self):
@@ -51,6 +33,7 @@ class FileReader:
         table=[]
         headers=[]
         with open(self.filename, 'r') as file:
+            # Skip the header line
 
             if not read_headers:
                 for line in file:
@@ -69,38 +52,36 @@ class FileReader:
             # Read each line and extract values
             for line in file:
                 values = line.strip().split(',')
-                
                 row=[]                
-                
                 for val in values:
                     if val=='':
                         break
                     row.append(float(val.strip()))
-
                 table.append(row)
-        
         return headers, table
-    
-    
 
-# TODO Part 3: Implement the conversion from Quaternion to Euler Angles
-def euler_from_quaternion(quat):
+
+# TODO Part 5: Implement the conversion from Quaternion to Euler Angles
+def euler_from_quaternion(q):
     """
     Convert quaternion (w in last place) to euler roll, pitch, yaw.
     quat = [x, y, z, w]
     """
 
-    # just unpack yaw
+    yaw = atan2(2.0*(q.w*q.z + q.x*q.y), 1-2*(q.y*q.y + q.z*q.z))
+    pitch = asin(-2.0*(q.x*q.z - q.w*q.y))
+    roll = atan2(2.0*(q.x*q.y + q.w*q.z), q.w*q.w + q.x*q.x - q.y*q.y - q.z*q.z)
+
     return yaw
 
 
 #TODO Part 4: Implement the calculation of the linear error
-def calculate_linear_error(current_pose, goal_pose):
+def calculate_linear_error(current_pose: list, goal_pose: list):
         
     # Compute the linear error in x and y
     # Remember that current_pose = [x,y, theta, time stamp] and goal_pose = [x,y]
     # Remember to use the Euclidean distance to calculate the error.
-    error_linear= ...
+    error_linear= dist(current_pose[:2], goal_pose)
 
     return error_linear
 
@@ -112,10 +93,21 @@ def calculate_angular_error(current_pose, goal_pose):
     # Use atan2 to find the desired orientation
     # Remember that this function returns the difference in orientation between where the robot currently faces and where it should face to reach the goal
 
-    error_angular = ...
+    error_angular = atan2(goal_pose[1] - current_pose[1], goal_pose[0] - current_pose[0]) - current_pose[2]
 
     # Remember to handle the cases where the angular error might exceed the range [-π, π]
 
-    ...
+    if error_angular > M_PI:
+        error_angular -= 2*M_PI
+    elif error_angular < -M_PI:
+        error_angular += 2*M_PI
+
     
     return error_angular
+
+def saturate(val, limit):
+    if val > limit:
+        return limit
+    elif val < -limit:
+        return -limit
+    return val
