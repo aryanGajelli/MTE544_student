@@ -1,11 +1,12 @@
 from math import atan2, asin, sqrt, dist
 import csv
-M_PI=3.1415926535
+M_PI = 3.1415926535
+
 
 class Logger:
     def __init__(self, filename, headers=["e", "e_dot", "e_int", "stamp"]):
         self.filename = filename
-        
+
         with open(self.filename, 'w') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(headers)
@@ -15,46 +16,45 @@ class Logger:
         with open(self.filename, 'a') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(values_list)
-            
 
     def save_log(self):
         pass
 
+
 class FileReader:
     def __init__(self, filename):
-        
-        self.filename = filename
-        
-        
-    def read_file(self):
-        
-        read_headers=False
 
-        table=[]
-        headers=[]
+        self.filename = filename
+
+    def read_file(self):
+
+        read_headers = False
+
+        table = []
+        headers = []
         with open(self.filename, 'r') as file:
             # Skip the header line
 
             if not read_headers:
                 for line in file:
-                    values=line.strip().split(',')
+                    values = line.strip().split(',')
 
                     for val in values:
-                        if val=='':
+                        if val == '':
                             break
                         headers.append(val.strip())
 
-                    read_headers=True
+                    read_headers = True
                     break
-            
+
             next(file)
-            
+
             # Read each line and extract values
             for line in file:
                 values = line.strip().split(',')
-                row=[]                
+                row = []
                 for val in values:
-                    if val=='':
+                    if val == '':
                         break
                     row.append(float(val.strip()))
                 table.append(row)
@@ -75,17 +75,19 @@ def euler_from_quaternion(q):
     return yaw
 
 
-#TODO Part 4: Implement the calculation of the linear error
+# TODO Part 4: Implement the calculation of the linear error
 def calculate_linear_error(current_pose: list, goal_pose: list):
-        
+
     # Compute the linear error in x and y
     # Remember that current_pose = [x,y, theta, time stamp] and goal_pose = [x,y]
     # Remember to use the Euclidean distance to calculate the error.
-    error_linear= dist(current_pose[:2], goal_pose)
+    error_linear = dist(current_pose[:2], goal_pose)
 
     return error_linear
 
-#TODO Part 4: Implement the calculation of the angular error
+# TODO Part 4: Implement the calculation of the angular error
+
+
 def calculate_angular_error(current_pose, goal_pose):
 
     # Compute the linear error in x and y
@@ -102,10 +104,13 @@ def calculate_angular_error(current_pose, goal_pose):
     elif error_angular < -M_PI:
         error_angular += 2*M_PI
 
-    
     return error_angular
 
+
 def saturate(val, limit):
+    """
+    Saturate the value to +- limit
+    """
     if val > limit:
         return limit
     elif val < -limit:

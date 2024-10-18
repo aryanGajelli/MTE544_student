@@ -25,13 +25,13 @@ def plot_errors(filename, traj=None):
     axes[0].grid()
 
     if traj =="parabola":
-        points = np.linspace(0, 1.5, 20)
+        points = np.linspace(0, 1.5, 30)
         func_results = planner.parabola(points)
-        axes[0].plot(func_results[0], func_results[1], label="parabola")
+        axes[0].plot(func_results[0], func_results[1], label="parabola", marker='.')
     elif traj=="sigmoid":
-        points = np.linspace(0, 2.5, 20)
+        points = np.linspace(0, 2.5, 30)
         func_results = planner.sigmoid(points)
-        axes[0].plot(func_results[0], func_results[1], label="sigmoid", marker='o')
+        axes[0].plot(func_results[0], func_results[1], label="sigmoid", marker='.')
 
     axes[1].set_title("each individual state")
     for i in range(0, len(headers) - 1):

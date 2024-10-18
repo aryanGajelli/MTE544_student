@@ -21,11 +21,12 @@ from controller import controller, trajectoryController
 
 # You may add any other imports you may need/want to use below
 # import ...
-
+PARABOLA = "parabola"
+SIGMOID = "sigmoid"
 
 class decision_maker(Node):
 
-    def __init__(self, publisher_msg, publishing_topic, qos_publisher, goalPoint=None, rate=10, motion_type=POINT_PLANNER):
+    def __init__(self, publisher_msg, publishing_topic, qos_publisher, goalPoint=None, rate=10, motion_type=POINT_PLANNER, trajectory_type=None):
 
         super().__init__("decision_maker")
 
@@ -41,7 +42,7 @@ class decision_maker(Node):
 
 
         if motion_type == POINT_PLANNER:
-            self.controller = controller(klp=3.0, klv=1.0, kli=1, kap=3.0, kav=1, kai = 0)
+            self.controller = controller(klp=3.0, klv=1.0, kli=1, kap=2.3, kav=1, kai = 0)
             self.planner = planner(POINT_PLANNER)
             # Instantiate the planner
             # NOTE: goalPoint is used only for the pointPlanner
@@ -49,14 +50,21 @@ class decision_maker(Node):
 
 
         elif motion_type == TRAJECTORY_PLANNER:
-            self.controller = trajectoryController(klp=3.0, klv=1.0, kli=1, kap=2.3, kav=1, kai = 0.7)
+            self.controller = trajectoryController(klp=2.3, klv=1.0, kli=1, kap=2.5, kav=0.7, kai = 0.9)
             self.planner = planner(TRAJECTORY_PLANNER)
             # Instantiate the planner
             # NOTE: goalPoint is used only for the pointPlanner
-            self.goal = self.planner.plan(goalPoint, trajectory_f=planner.sigmoid, upper_limit=2.5, num_divisions=20)
+            if trajectory_type == PARABOLA:
+                self.goal = self.planner.plan(goalPoint, trajectory_f=planner.parabola, upper_limit=1.5, num_divisions=30)
+            elif trajectory_type == SIGMOID:
+                self.goal = self.planner.plan(goalPoint, trajectory_f=planner.sigmoid, upper_limit=2.5, num_divisions=30)
+            else:
+                print("Error! you don't have this trajectory", file=sys.stderr)
+                exit(1)
             print(self.goal)
         else:
             print("Error! you don't have this planner", file=sys.stderr)
+            exit(1)
 
         # Instantiate the localization, use rawSensor for now
         self.localizer = localization(rawSensor)
@@ -114,7 +122,7 @@ def main(args=None):
     if args.motion.lower() == "point":
         DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=POINT_PLANNER, goalPoint=[-3.0, -4.0])
     elif args.motion.lower() == "trajectory":
-        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=TRAJECTORY_PLANNER)
+        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=TRAJECTORY_PLANNER, trajectory_type=args.traj)
     else:
         print("invalid motion type", file=sys.stderr)
 
@@ -128,6 +136,7 @@ if __name__ == "__main__":
 
     argParser = argparse.ArgumentParser(description="point or trajectory")
     argParser.add_argument("--motion", type=str, default="point")
+    argParser.add_argument("--traj", type=str, default=None)
     args = argParser.parse_args()
 
     main(args)
