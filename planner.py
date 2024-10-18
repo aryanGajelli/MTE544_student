@@ -8,9 +8,11 @@ class planner:
 
         self.type=type_
 
+    @staticmethod
     def parabola(t):
         return t, t*t
 
+    @staticmethod
     def sigmoid(t):
         return t, 2.0/(1+np.exp(-2*t))-1.0
     
@@ -29,7 +31,8 @@ class planner:
         return x, y
 
     # TODO Part 6: Implement the trajectories here
-    def trajectory_planner(self, trajectory_f, upper_limit, num_divisions):
+    @staticmethod
+    def trajectory_planner(trajectory_f, upper_limit, num_divisions):
         points = np.linspace(0, upper_limit, num_divisions)
         return np.squeeze(np.dstack(trajectory_f(points)))
         # the return should be a list of trajectory points: [ [x1,y1], ..., [xn,yn]]

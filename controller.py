@@ -48,7 +48,7 @@ class trajectoryController(controller):
         
         finalGoal=listGoals[-1]
         
-        e_lin=calculate_linear_error(pose, finalGoal)
+        e_lin=calculate_linear_error(pose, goal)
         e_ang=calculate_angular_error(pose, goal)
 
         

@@ -49,11 +49,11 @@ class decision_maker(Node):
 
 
         elif motion_type == TRAJECTORY_PLANNER:
-            self.controller = trajectoryController(klp=3.0, klv=1.0, kli=1, kap=1.3, kav=1, kai = 0)
+            self.controller = trajectoryController(klp=3.0, klv=1.0, kli=1, kap=2.3, kav=1, kai = 0.7)
             self.planner = planner(TRAJECTORY_PLANNER)
             # Instantiate the planner
             # NOTE: goalPoint is used only for the pointPlanner
-            self.goal = self.planner.plan(goalPoint, trajectory_f=planner.parabola, upper_limit=1.5, num_divisions=20)
+            self.goal = self.planner.plan(goalPoint, trajectory_f=planner.sigmoid, upper_limit=2.5, num_divisions=20)
             print(self.goal)
         else:
             print("Error! you don't have this planner", file=sys.stderr)
