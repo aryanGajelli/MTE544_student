@@ -25,9 +25,11 @@ from controller import controller, trajectoryController
 
 class decision_maker(Node):
 
-    def __init__(self, publisher_msg, publishing_topic, qos_publisher, goalPoint, rate=10, motion_type=POINT_PLANNER):
+    def __init__(self, publisher_msg, publishing_topic, qos_publisher, goalPoint=None, rate=10, motion_type=POINT_PLANNER):
 
         super().__init__("decision_maker")
+
+        self.motion_type = motion_type
 
         # TODO Part 4: Create a publisher for the topic responsible for robot's motion
         self.publisher = self.create_publisher(publisher_msg, topic=publishing_topic, qos_profile=qos_publisher)
@@ -37,23 +39,27 @@ class decision_maker(Node):
         # Instantiate the controller
         # TODO Part 5: Tune your parameters here
 
+
         if motion_type == POINT_PLANNER:
-            self.controller = controller(klp=1, klv=0, kap=1, kav=0)
+            self.controller = controller(klp=3.0, klv=1.0, kli=1, kap=3.0, kav=1, kai = 0)
             self.planner = planner(POINT_PLANNER)
+            # Instantiate the planner
+            # NOTE: goalPoint is used only for the pointPlanner
+            self.goal = self.planner.plan(goalPoint)
+
 
         elif motion_type == TRAJECTORY_PLANNER:
-            self.controller = trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)
+            self.controller = trajectoryController(klp=3.0, klv=1.0, kli=1, kap=1.3, kav=1, kai = 0)
             self.planner = planner(TRAJECTORY_PLANNER)
-
+            # Instantiate the planner
+            # NOTE: goalPoint is used only for the pointPlanner
+            self.goal = self.planner.plan(goalPoint, trajectory_f=planner.parabola, upper_limit=1.5, num_divisions=20)
+            print(self.goal)
         else:
             print("Error! you don't have this planner", file=sys.stderr)
 
         # Instantiate the localization, use rawSensor for now
         self.localizer = localization(rawSensor)
-
-        # Instantiate the planner
-        # NOTE: goalPoint is used only for the pointPlanner
-        self.goal = self.planner.plan(goalPoint)
 
         self.create_timer(publishing_period, self.timerCallback)
 
@@ -70,7 +76,8 @@ class decision_maker(Node):
         vel_msg = Twist()
 
         # TODO Part 3: Check if you reached the goal
-        if type(self.goal) == list:
+
+        if self.motion_type == TRAJECTORY_PLANNER:
             reached_goal = calculate_linear_error(pose, self.goal[-1]) < 0.01
         else:
             reached_goal = calculate_linear_error(pose, self.goal) < 0.01
@@ -105,9 +112,9 @@ def main(args=None):
 
     # TODO Part 4: instantiate the decision_maker with the proper parameters for moving the robot
     if args.motion.lower() == "point":
-        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=POINT_PLANNER, goalPoint=[-2.0, -5.0])
+        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=POINT_PLANNER, goalPoint=[-3.0, -4.0])
     elif args.motion.lower() == "trajectory":
-        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=odom_qos, motion_type=TRAJECTORY_PLANNER, goalPoint=[[2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
+        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=TRAJECTORY_PLANNER)
     else:
         print("invalid motion type", file=sys.stderr)
 
