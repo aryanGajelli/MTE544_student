@@ -30,8 +30,9 @@ class controller:
         
         # TODO Part 4: Add saturation limits for the robot linear and angular velocity
         # See for max vels https://emanual.robotis.com/docs/en/platform/turtlebot3/features/
-        linear_vel = saturate(linear_vel, 0.22)
-        angular_vel= saturate(angular_vel, 2.84)
+        # https://turtlebot.github.io/turtlebot4-user-manual/overview/features.html#hardware-specifications
+        linear_vel = saturate(linear_vel, 0.31)
+        angular_vel= saturate(angular_vel, 1.9)
         
         return linear_vel, angular_vel
     
@@ -57,8 +58,8 @@ class trajectoryController(controller):
 
         # TODO Part 5: Add saturation limits for the robot linear and angular velocity
 
-        linear_vel = saturate(linear_vel, 0.22)
-        angular_vel= saturate(angular_vel, 2.84)
+        linear_vel = saturate(linear_vel, 0.31)
+        angular_vel= saturate(angular_vel, 1.9)
         
         return linear_vel, angular_vel
 

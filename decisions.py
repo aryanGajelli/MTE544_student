@@ -42,7 +42,8 @@ class decision_maker(Node):
 
 
         if motion_type == POINT_PLANNER:
-            self.controller = controller(klp=3.0, klv=1.0, kli=1, kap=2.3, kav=1, kai = 0)
+            self.controller = controller(klp=0.9, klv=1.0, kli=0.01, kap=1, kav=0.5, kai=0.5)
+            # self.controller = controller(klp=.4, klv=0, kli=0, kap=1, kav=0, kai = 0)
             self.planner = planner(POINT_PLANNER)
             # Instantiate the planner
             # NOTE: goalPoint is used only for the pointPlanner
@@ -50,14 +51,15 @@ class decision_maker(Node):
 
 
         elif motion_type == TRAJECTORY_PLANNER:
-            self.controller = trajectoryController(klp=2.3, klv=1.0, kli=1, kap=2.5, kav=0.7, kai = 0.9)
+            self.controller = trajectoryController(klp=1, klv=1.0, kli=0.01, kap=1.1, kav=0.5, kai=0.01)
+            # self.controller = trajectoryController(klp=2.3, klv=1.0, kli=1, kap=2.5, kav=0.7, kai = 0.9)
             self.planner = planner(TRAJECTORY_PLANNER)
             # Instantiate the planner
             # NOTE: goalPoint is used only for the pointPlanner
             if trajectory_type == PARABOLA:
-                self.goal = self.planner.plan(goalPoint, trajectory_f=planner.parabola, upper_limit=1.5, num_divisions=30)
+                self.goal = self.planner.plan(goalPoint, trajectory_f=planner.parabola, upper_limit=1.5, num_divisions=15)
             elif trajectory_type == SIGMOID:
-                self.goal = self.planner.plan(goalPoint, trajectory_f=planner.sigmoid, upper_limit=2.5, num_divisions=30)
+                self.goal = self.planner.plan(goalPoint, trajectory_f=planner.sigmoid, upper_limit=2.5, num_divisions=15)
             else:
                 print("Error! you don't have this trajectory", file=sys.stderr)
                 exit(1)
@@ -86,9 +88,9 @@ class decision_maker(Node):
         # TODO Part 3: Check if you reached the goal
 
         if self.motion_type == TRAJECTORY_PLANNER:
-            reached_goal = calculate_linear_error(pose, self.goal[-1]) < 0.01
+            reached_goal = calculate_linear_error(pose, self.goal[-1]) < 0.05
         else:
-            reached_goal = calculate_linear_error(pose, self.goal) < 0.01
+            reached_goal = calculate_linear_error(pose, self.goal) < 0.05
 
         if reached_goal:
             print("reached goal")
@@ -108,9 +110,11 @@ class decision_maker(Node):
         vel_msg.angular.z = yaw_rate
         self.publisher.publish(vel_msg)
 
-
+# import subprocess
+# import time
 def main(args=None):
-
+    # subprocess.Popen("ros2 service call /reset_pose irobot_create_msgs/srv/ResetPose".split(' '))
+    # time.sleep(1)
     rclpy.init()
 
     # TODO Part 3: You migh need to change the QoS profile based on whether you're using the real robot or in simulation.
@@ -120,7 +124,7 @@ def main(args=None):
 
     # TODO Part 4: instantiate the decision_maker with the proper parameters for moving the robot
     if args.motion.lower() == "point":
-        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=POINT_PLANNER, goalPoint=[-3.0, -4.0])
+        DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=POINT_PLANNER, goalPoint=[1, -1])
     elif args.motion.lower() == "trajectory":
         DM = decision_maker(Twist, "/cmd_vel", qos_publisher=10, motion_type=TRAJECTORY_PLANNER, trajectory_type=args.traj)
     else:
