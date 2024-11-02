@@ -42,8 +42,8 @@ class decision_maker(Node):
 
 
         if motion_type == POINT_PLANNER:
-            self.controller = controller(klp=0.9, klv=1.0, kli=0.01, kap=1, kav=0.5, kai=0.5)
-            # self.controller = controller(klp=.4, klv=0, kli=0, kap=1, kav=0, kai = 0)
+            self.controller = controller(klp=0.9, klv=1.0, kli=0.01, kap=1, kav=0.5, kai=0.5) # PID Controller Tuning Constants for Point Planner
+            # self.controller = controller(klp=.4, klv=0, kli=0, kap=1, kav=0, kai = 0) # P Controller Tuning Constants for Point Planner
             self.planner = planner(POINT_PLANNER)
             # Instantiate the planner
             # NOTE: goalPoint is used only for the pointPlanner
@@ -51,7 +51,9 @@ class decision_maker(Node):
 
 
         elif motion_type == TRAJECTORY_PLANNER:
-            self.controller = trajectoryController(klp=1, klv=1.0, kli=0.01, kap=1.1, kav=0.5, kai=0.01)
+            # PID Controller Tuning Constants for Trajectory Planner
+            self.controller = trajectoryController(klp=1, klv=1.0, kli=0.01, kap=1.1, kav=0.5, kai=0.01) 
+            
             # self.controller = trajectoryController(klp=2.3, klv=1.0, kli=1, kap=2.5, kav=0.7, kai = 0.9)
             self.planner = planner(TRAJECTORY_PLANNER)
             # Instantiate the planner

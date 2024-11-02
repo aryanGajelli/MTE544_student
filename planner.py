@@ -11,11 +11,11 @@ class planner:
 
     @staticmethod
     def parabola(t):
-        return t, t*t
+        return t, t*t # parabola function, parametrized by t
 
     @staticmethod
     def sigmoid(t):
-        return t, 2.0/(1+np.exp(-2*t))-1.0
+        return t, 2.0/(1+np.exp(-2*t))-1.0 # sigmoid function, parametrized by t
     
     def plan(self, goalPoint=[-1.0, -1.0], trajectory_f: Callable[[float], float]=parabola, upper_limit=1.5, num_divisions=10):
         """
@@ -39,6 +39,5 @@ class planner:
     @staticmethod
     def trajectory_planner(trajectory_f, upper_limit, num_divisions):
         points = np.linspace(0, upper_limit, num_divisions)
-        return np.squeeze(np.dstack(trajectory_f(points)))
-        # the return should be a list of trajectory points: [ [x1,y1], ..., [xn,yn]]
+        return np.squeeze(np.dstack(trajectory_f(points))) # return is a list of trajectory points: [ [x1,y1], ..., [xn,yn]]
 
