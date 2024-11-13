@@ -46,8 +46,8 @@ class kalman_filter:
         return np.array([
             v,# v
             w,# w
-            vdot * np.cos(th), # ax
-            vdot * np.sin(th), # ay
+            vdot, # ax
+            v * w, # ay
         ])
         
     # TODO Part 3: Impelment the motion model (state-transition matrice)
@@ -86,8 +86,8 @@ class kalman_filter:
             #x, y,th, w, v,vdot
             [0,0,0  , 0, 1, 0], # v
             [0,0,0  , 1, 0, 0], # w
-            [0,0,0  , 0, 0, np.cos(th)], # ax
-            [0,0,0  , 0, 0, np.sin(th)], # ay
+            [0,0,0  , 0, 0, 1], # ax
+            [0,0,0  , v, w, 0], # ay
         ])
         
     # TODO Part 3: return the states here    
