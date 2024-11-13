@@ -47,19 +47,20 @@ class localization(Node):
         
         # TODO Part 3: Set up the quantities for the EKF (hint: you will need the functions for the states and measurements)
         
-        x= ...
+        x= np.array([0, 0, 0, 0, 0, 0]) # initial state
         
-        Q= ...
+        Q= 0.5*np.eye(6) # process noise, 6 variables: x, y, th, w, v, vdot
 
-        R= ...
+        R= 0.5*np.eye(4) # measurement noise, 4 variables: v, w, ax, ay
         
-        P= ... # initial covariance
+        P= Q
+        # initial covariance
         
         self.kf=kalman_filter(P,Q,R, x, dt)
         
         # TODO Part 3: Use the odometry and IMU data for the EKF
-        self.odom_sub=message_filters.Subscriber(...)
-        self.imu_sub=message_filters.Subscriber(...)
+        self.odom_sub=message_filters.Subscriber(self, odom, topic="/odom", qos_profile=odom_qos)
+        self.imu_sub=message_filters.Subscriber(self, Imu, topic="/imu")
         
         time_syncher=message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.imu_sub], queue_size=10, slop=0.1)
         time_syncher.registerCallback(self.fusion_callback)
@@ -71,7 +72,7 @@ class localization(Node):
         # your measurements are the linear velocity and angular velocity from odom msg
         # and linear acceleration in x and y from the imu msg
         # the kalman filter should do a proper integration to provide x,y and filter ax,ay
-        z=...
+        z=np.array([odom_msg.twist.twist.linear.x, odom_msg.twist.twist.angular.z, imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y])
         
         # Implement the two steps for estimation
         ...
@@ -86,7 +87,6 @@ class localization(Node):
         self.loc_logger.log_values(...)
       
     def odom_callback(self, pose_msg):
-        
         self.pose=[ pose_msg.pose.pose.position.x,
                     pose_msg.pose.pose.position.y,
                     euler_from_quaternion(pose_msg.pose.pose.orientation),
