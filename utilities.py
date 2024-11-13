@@ -1,5 +1,6 @@
-from math import atan2, asin, sqrt
+from math import atan2, asin, sqrt, dist
 import csv
+from pathlib import Path
 M_PI=3.1415926535
 
 import numpy as np
@@ -7,7 +8,11 @@ import numpy as np
 class Logger:
     def __init__(self, filename, headers=["e", "e_dot", "e_int", "stamp"]):
         self.filename = filename
+        parent = Path(self.filename).parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
 
+        
         with open(self.filename, 'w') as file:
             csv_writer = csv.writer(file)
             csv_writer.writerow(headers)
@@ -86,7 +91,7 @@ def calculate_linear_error(current_pose: list, goal_pose: list):
     # Compute the linear error in x and y
     # Remember that current_pose = [x,y, theta, time stamp] and goal_pose = [x,y]
     # Remember to use the Euclidean distance to calculate the error.
-    error_linear = dist(current_pose[:2], goal_pose)
+    error_linear = dist(current_pose[:2], goal_pose[:2])
 
     return error_linear
 
