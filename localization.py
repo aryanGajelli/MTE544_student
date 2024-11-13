@@ -19,6 +19,8 @@ from rclpy import init, spin, spin_once
 import numpy as np
 import message_filters
 
+import math
+
 rawSensors=0
 kalmanFilter=1
 odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
@@ -29,7 +31,7 @@ class localization(Node):
 
         super().__init__("localizer")
 
-        elf.loc_logger=Logger( loggerName , loggerHeaders)
+        self.loc_logger=Logger( loggerName , loggerHeaders)
         self.pose=None
         
         if type==rawSensors:
@@ -72,19 +74,22 @@ class localization(Node):
         # your measurements are the linear velocity and angular velocity from odom msg
         # and linear acceleration in x and y from the imu msg
         # the kalman filter should do a proper integration to provide x,y and filter ax,ay
-        z=np.array([odom_msg.twist.twist.linear.x, odom_msg.twist.twist.angular.z, imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y])
+        z=np.array([math.dist(odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y), odom_msg.twist.twist.angular.z, imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y])
         
         # Implement the two steps for estimation
-        ...
+        self.kf.predict()
         
         # Get the estimate
-        xhat=self.kf.get_states()
+        self.kf.update(z)
+        xhat=self.kf.get_states(self)
+
+        x, y, th, w, v, vdot = xhat
 
         # Update the pose estimate to be returned by getPose
-        self.pose=np.array(...)
+        self.pose=np.array([x, y, th, odom_msg.header.stamp])
 
         # TODO Part 4: log your data
-        self.loc_logger.log_values(...)
+        self.loc_logger.log_values(imu_msg.linear_acceleration.x, imu_msg.linear_acceleration.y, vdot*np.cos(th), vdot*np.sin(th), v*np.cos(th), w, x, y, odom_msg.header.stamp)
       
     def odom_callback(self, pose_msg):
         self.pose=[ pose_msg.pose.pose.position.x,

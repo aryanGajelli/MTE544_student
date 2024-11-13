@@ -20,10 +20,10 @@ class kalman_filter:
     # TODO Part 3: Replace the matrices with Jacobians where needed        
     def predict(self):
 
-        self.A = self.jacobian_A(self)
-        self.C = self.jacobian_H(self)
+        self.A = self.jacobian_A()
+        self.C = self.jacobian_H()
         
-        self.motion_model(self)
+        self.motion_model()
         
         self.P= np.dot( np.dot(self.A, self.P), self.A.T) + self.Q
 
@@ -46,8 +46,8 @@ class kalman_filter:
         return np.array([
             v,# v
             w,# w
-            vdot, # ax
-            v * w, # ay
+            vdot * np.cos(th), # ax
+            vdot * np.sin(th), # ay
         ])
         
     # TODO Part 3: Impelment the motion model (state-transition matrice)
@@ -71,15 +71,14 @@ class kalman_filter:
         
         return np.array([
             #x, y,               th, w,                        v, vdot
-            [1, 0,              -v*np.sin(th)*dt, 0,          ,  0],
-            [0, 1,              v*np.cos(th)*dt, 0,           ...,  0],
+            [1, 0,              -v*np.sin(th)*dt, 0,           np.cos(th) * dt,  0],
+            [0, 1,              v*np.cos(th)*dt, 0,            np.sin(th) * dt,  0],
             [0, 0,                1, dt,                        0,  0],
             [0, 0,                0, 1,                         0,  0],
             [0, 0,                0, 0,                        1,  dt],
             [0, 0,                0, 0,                        0,  1 ]
         ])
-    
-    
+
     # TODO Part 3: Implement here the jacobian of the H matrix (measurements)    
     def jacobian_H(self):
         x, y, th, w, v, vdot=self.x
@@ -87,10 +86,10 @@ class kalman_filter:
             #x, y,th, w, v,vdot
             [0,0,0  , 0, 1, 0], # v
             [0,0,0  , 1, 0, 0], # w
-            [0,0,0  , 0, 0, 1], # ax
-            [0,0,0  , ..., ..., 0], # ay
+            [0,0,0  , 0, 0, np.cos(th)], # ax
+            [0,0,0  , 0, 0, np.sin(th)], # ay
         ])
         
     # TODO Part 3: return the states here    
     def get_states(self):
-        return ...
+        return self.x
