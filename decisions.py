@@ -9,6 +9,7 @@ from geometry_msgs.msg import Twist
 
 
 from rclpy.qos import QoSProfile
+from rclpy.time import Time
 from nav_msgs.msg import Odometry as odom
 
 from localization import localization, rawSensors, kalmanFilter
@@ -36,12 +37,14 @@ class decision_maker(Node):
         self.localizer=localization(type=kalmanFilter, dt=publishing_period)
         
         if motion_type==POINT_PLANNER:
-            self.controller=controller(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
+            # self.controller=controller(klp=0.2, klv=0.5, kap=0.8, kav=0.6)   
+            self.controller=controller(klp=0.9, klv=1.0, kli=0.01, kap=1, kav=0.5, kai=0.5)   
             self.planner=planner(POINT_PLANNER)
 
         
         elif motion_type==TRAJECTORY_PLANNER:
-            self.controller=trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
+            # self.controller=trajectoryController(klp=0.2, klv=0.5, kap=0.8, kav=0.6)      
+            self.controller = trajectoryController(klp=1, klv=1.0, kli=0.01, kap=1.1, kav=0.5, kai=0.01) 
             self.planner=planner(TRAJECTORY_PLANNER)
         elif motion_type==SPIRAL_4TUNE:
             self.controller=None
@@ -58,7 +61,7 @@ class decision_maker(Node):
 
         self.create_timer(publishing_period, self.timerCallback)
 
-
+    first_time = None
 
     def timerCallback(self):
         
@@ -68,13 +71,21 @@ class decision_maker(Node):
             print("waiting for odom msgs ....")
             return
         
+        curr_time = Time.from_msg(self.localizer.getPose()[-1]).nanoseconds / 1e9
+        if self.first_time is None:
+            self.first_time = curr_time
         
         vel_msg=Twist()
 
         if self.motion_type == SPIRAL_4TUNE:
             self.linearVelocity += 0.01 if self.linearVelocity < 1.0 else 0.0
+
+            if curr_time-self.first_time > 30:
+                raise SystemExit
+
             vel_msg.linear.x=self.linearVelocity
             vel_msg.angular.z=1.0
+            # vel_msg.angular.z=0.9
             self.publisher.publish(vel_msg)
             return
 

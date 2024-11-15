@@ -1,7 +1,7 @@
 import argparse
 import matplotlib.pyplot as plt
 from utilities import FileReader
-
+from planner import planner
 
 def plot_errors(filename):
 
@@ -17,6 +17,8 @@ def plot_errors(filename):
     fig, axes = plt.subplots(2, 1, figsize=(14, 6))
 
     axes[0].plot([lin[len(headers) - 3] for lin in values], [lin[len(headers) - 2] for lin in values])
+    x,y=map(list, zip(*planner.trajectory_planner()))
+    axes[0].plot(x,y, marker='.')
     axes[0].set_title("state space")
     axes[0].grid()
 

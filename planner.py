@@ -24,9 +24,9 @@ class planner:
         x=-1.0; y=-1.0; theta=0.0
         return x, y, theta
 
-
-    def trajectory_planner(self):
-        TRAJECTORY_TYPE=SIGMOID
+    @staticmethod
+    def trajectory_planner():
+        TRAJECTORY_TYPE=PARABOLA
         degree_rad_conversion=3.14/180.0
         if TRAJECTORY_TYPE == PARABOLA:
             

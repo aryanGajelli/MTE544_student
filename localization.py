@@ -51,9 +51,9 @@ class localization(Node):
         
         x= np.array([0, 0, 0, 0, 0, 0]) # initial state
         
-        Q= 0.5*np.eye(6) # process noise, 6 variables: x, y, th, w, v, vdot
+        Q= 0.45*np.eye(6) # process noise, 6 variables: x, y, th, w, v, vdot
 
-        R= 0.5*np.eye(4) # measurement noise, 4 variables: v, w, ax, ay
+        R= 0.9*np.eye(4) # measurement noise, 4 variables: v, w, ax, ay
         
         P= Q
         # initial covariance
@@ -62,7 +62,7 @@ class localization(Node):
         
         # TODO Part 3: Use the odometry and IMU data for the EKF
         self.odom_sub=message_filters.Subscriber(self, odom, "/odom", qos_profile=odom_qos)
-        self.imu_sub=message_filters.Subscriber(self, Imu, "/imu")
+        self.imu_sub=message_filters.Subscriber(self, Imu, "/imu", qos_profile=odom_qos)
         
         time_syncher=message_filters.ApproximateTimeSynchronizer([self.odom_sub, self.imu_sub], queue_size=10, slop=0.1)
         time_syncher.registerCallback(self.fusion_callback)

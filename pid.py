@@ -79,7 +79,7 @@ class PID_ctrl:
         error_int=sum_*dt_avg
         
         # Log your errors
-        self.logger.log_values( [latest_error, error_dot, error_int, Time.from_msg(stamp).nanoseconds])
+        self.logger.log_values( [latest_error, error_dot, error_int, Time.from_msg(stamp).nanoseconds / 1e9])
 
         # Control law corresponding to each type of controller
         if self.type == P:
