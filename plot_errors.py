@@ -14,15 +14,20 @@ def plot_errors(filename):
     for val in values:
         time_list.append(val[-1] - first_stamp)
 
-    fig, axes = plt.subplots(2, 1, figsize=(14, 6))
+    fig, axes = plt.subplots(2, 1, figsize=(10, 6))
+    fig.subplots_adjust(hspace=0.4)
 
     axes[0].plot([lin[len(headers) - 3] for lin in values], [lin[len(headers) - 2] for lin in values])
     x,y=map(list, zip(*planner.trajectory_planner()))
-    axes[0].plot(x,y, marker='.')
-    axes[0].set_title("state space")
+    # axes[0].plot(x,y, marker='.')
+    axes[0].set_title("Path")
+    axes[0].set_xlabel("x Position (m)")
+    axes[0].set_ylabel("y Position (m)")
     axes[0].grid()
 
-    axes[1].set_title("each individual state")
+    axes[1].set_title("Each Individual State")
+    axes[1].set_xlabel("Time (s)")
+    axes[1].set_ylabel("Variable Value")
     axes[1].grid()
     lines = []
     for i in range(0, len(headers) - 1):
