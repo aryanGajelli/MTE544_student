@@ -4,7 +4,7 @@
 import csv
 from math import atan2, asin, sqrt
 from pathlib import Path
-from sensor_msgs.msg import LaserScan
+# from sensor_msgs.msg import LaserScan
 
 
 import numpy as np
@@ -131,7 +131,7 @@ def calculate_angular_error(current_pose, goal_pose):
 
 
 
-def convertScanToCartesian(laserScan: LaserScan):
+def convertScanToCartesian(laserScan):
 
     angle_min = laserScan.angle_min
     angle_increment = laserScan.angle_increment
