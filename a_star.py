@@ -17,7 +17,7 @@ class Node:
         f is total cost of present node i.e. :  f = g + h
     """
 
-    def __init__(self, parent=None, position=None):
+    def __init__(self, parent=None, position: tuple = None):
         self.parent = parent
         self.position = position
 
@@ -63,7 +63,7 @@ def heuristic(a: list[float, float], b: list[float, float]) -> float:
         raise ValueError("Invalid heuristic type")
 
 
-def search(maze: np.ndarray, start: list[float, float], end: list[float, float]):
+def search(maze: np.ndarray, start: tuple[float, float], end: tuple[float, float]):
 
     print("searching ....")
 
@@ -173,7 +173,7 @@ def search(maze: np.ndarray, start: list[float, float], end: list[float, float])
         for new_position in move:
 
             # TODO PART 4 Get node position
-            node_position = [current_node[0] + new_position[0], current_node[1] + new_position[1]]
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # TODO PART 4 Make sure within range (check if within maze boundary)
             if node_position[0] > (no_rows - 1) or node_position[0] < 0 or node_position[1] > (no_columns - 1) or node_position[1] < 0:

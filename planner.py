@@ -12,7 +12,7 @@ class planner:
 
     
     def plan(self, startPose, endPose):
-        
+        print(f"Current: {startPose}, Target: {endPose}")
         if self.type==POINT_PLANNER:
             return self.point_planner(endPose)
         
@@ -48,13 +48,12 @@ class planner:
         endPose=self.m_utilites.position_2_cell(endPoseCart)
         
         # TODO PART 5 convert the cell pixels into the cartesian coordinates
-        
-        Path = list(map(...))
+        Path = list(map(self.m_utilites.cell_2_position, search(self.costMap, startPose, endPose)))
 
 
 
         # TODO PART 5 return the path as list of [x,y]
-        return ...
+        return Path
 
 
 
