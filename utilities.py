@@ -1,7 +1,9 @@
 
 
 
+import csv
 from math import atan2, asin, sqrt
+from pathlib import Path
 from sensor_msgs.msg import LaserScan
 
 
@@ -18,37 +20,23 @@ def normalize_angle(theta):
         theta += 2 * M_PI
     return theta
 
-
-
-
-
 class Logger:
     def __init__(self, filename, headers=["e", "e_dot", "e_int", "stamp"]):
         self.filename = filename
+        parent = Path(self.filename).parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
 
+        
         with open(self.filename, 'w') as file:
-            header_str=""
-
-            for header in headers:
-                header_str+=header
-                header_str+=", "
-            
-            header_str+="\n"
-            
-            file.write(header_str)
-
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(headers)
 
     def log_values(self, values_list):
 
         with open(self.filename, 'a') as file:
-            vals_str=""
-            for value in values_list:
-                vals_str+=f"{value}, "
-            
-            vals_str+="\n"
-            
-            file.write(vals_str)
-            
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(values_list)
 
     def save_log(self):
         pass
