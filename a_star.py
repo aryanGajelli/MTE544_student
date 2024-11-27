@@ -115,7 +115,7 @@ def search(maze: np.ndarray, start: list[float, float], end: list[float, float])
             [1, 1],  # go up left
             [1, -1],  # go down left
             [-1, 1],  # go up right
-            [-1,-1]]  # go down right
+            [-1, -1]]  # go down right
 
     """
         1) We first get the current node by comparing all f cost and selecting the lowest cost node for further expansion
@@ -198,15 +198,14 @@ def search(maze: np.ndarray, start: list[float, float], end: list[float, float])
                 continue
 
             # TODO PART 4 Create the f, g, and h values
-            child.g = child.parent.g + 1
+            child.g = child.parent.g + dist(child.position, child.parent.position)
             # Heuristic costs calculated here, this is using eucledian distance
-            child.h = ...
+            child.h = heuristic(child.position, end_node.position)
 
             # child.f = child.g + child.h
 
             # Child is already in the yet_to_visit list and g cost is already lower
-            child_node_in_yet_to_visit = yet_to_visit_dict.get(
-                child.position, False)
+            child_node_in_yet_to_visit = yet_to_visit_dict.get(child.position, False)
             if (child_node_in_yet_to_visit is not False) and (child.g >= child_node_in_yet_to_visit.g):
                 continue
 
